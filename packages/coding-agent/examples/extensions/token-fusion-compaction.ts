@@ -15,9 +15,6 @@
  *   pi.use(createTokenFusionExtension());
  */
 
-import type { Extension } from "@earendil-works/pi-coding-agent";
-// Or without the pi dep: paste the pi.ts logic directly
-
 export default {
 	name: "token-fusion-compaction",
 
@@ -75,4 +72,4 @@ export default {
 			},
 		};
 	},
-} satisfies Extension;
+};
