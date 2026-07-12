@@ -7,13 +7,8 @@
 
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import type {
-  CompressionOptions,
-  CompressionResult,
-  MessagesCompressionResult,
-  StageStats,
-} from "./types.js";
-import { JsCompressor } from "./js-compress.js";
+import { JsCompressor } from "./js-compress";
+import type { CompressionOptions, CompressionResult, MessagesCompressionResult, StageStats } from "./types";
 
 /**
  * Compress a single text block using the 14-stage Fusion Pipeline.
@@ -23,10 +18,10 @@ import { JsCompressor } from "./js-compress.js";
  * @returns Compression result with stats
  */
 export function compress(text: string, options: CompressionOptions = {}): CompressionResult {
-  if (usePythonEngine()) {
-    return compressViaPython(text, options);
-  }
-  return new JsCompressor().compress(text, options);
+	if (usePythonEngine()) {
+		return compressViaPython(text, options);
+	}
+	return new JsCompressor().compress(text, options);
 }
 
 /**
@@ -37,85 +32,85 @@ export function compress(text: string, options: CompressionOptions = {}): Compre
  * @returns Per-message results + aggregate stats
  */
 export function compressMessages(
-  messages: Array<{ role: string; content: string }>,
-  options: CompressionOptions = {},
+	messages: Array<{ role: string; content: string }>,
+	options: CompressionOptions = {},
 ): MessagesCompressionResult {
-  const results: MessagesCompressionResult["perMessage"] = [];
-  let totalOrig = 0;
-  let totalComp = 0;
-  let start = performance.now();
+	const results: MessagesCompressionResult["perMessage"] = [];
+	let totalOrig = 0;
+	let totalComp = 0;
+	const start = performance.now();
 
-  for (const msg of messages) {
-    const r = compress(msg.content, { ...options, role: msg.role as any });
-    results.push({
-      role: msg.role,
-      original: msg.content,
-      compressed: r.compressed,
-      stats: r.stats,
-    });
-    totalOrig += r.stats.originalTokens;
-    totalComp += r.stats.compressedTokens;
-  }
+	for (const msg of messages) {
+		const r = compress(msg.content, { ...options, role: msg.role as any });
+		results.push({
+			role: msg.role,
+			original: msg.content,
+			compressed: r.compressed,
+			stats: r.stats,
+		});
+		totalOrig += r.stats.originalTokens;
+		totalComp += r.stats.compressedTokens;
+	}
 
-  const elapsed = performance.now() - start;
-  return {
-    perMessage: results,
-    stats: {
-      totalOriginalTokens: totalOrig,
-      totalCompressedTokens: totalComp,
-      totalReductionPct: totalOrig > 0 ? (1 - totalComp / totalOrig) * 100 : 0,
-      totalTimeMs: elapsed,
-    },
-  };
+	const elapsed = performance.now() - start;
+	return {
+		perMessage: results,
+		stats: {
+			totalOriginalTokens: totalOrig,
+			totalCompressedTokens: totalComp,
+			totalReductionPct: totalOrig > 0 ? (1 - totalComp / totalOrig) * 100 : 0,
+			totalTimeMs: elapsed,
+		},
+	};
 }
 
 /**
  * Estimate token count (heuristic — ~4 chars per token).
  */
 export function estimateTokens(text: string, model?: string): number {
-  return Math.max(1, Math.ceil(text.length / 4));
+	return Math.max(1, Math.ceil(text.length / 4));
 }
 
 // ─── Python bridge ───────────────────────────────────────────
 
 function usePythonEngine(): boolean {
-  try {
-    const r = spawnSync("python3", ["-c", "from token_fusion.pipeline import FusionEngine; print('ok')"]);
-    return r.status === 0;
-  } catch {
-    return false;
-  }
+	try {
+		const r = spawnSync("python3", ["-c", "from token_fusion.pipeline import FusionEngine; print('ok')"]);
+		return r.status === 0;
+	} catch {
+		return false;
+	}
 }
 
 function compressViaPython(text: string, options: CompressionOptions): CompressionResult {
-  const args: string[] = ["-c", buildPythonScript(text, options)];
-  const result = spawnSync("python3", args, {
-    encoding: "utf-8",
-    timeout: 30_000,
-    maxBuffer: 10 * 1024 * 1024,
-  });
+	const args: string[] = ["-c", buildPythonScript(text, options)];
+	const result = spawnSync("python3", args, {
+		encoding: "utf-8",
+		timeout: 30_000,
+		maxBuffer: 10 * 1024 * 1024,
+	});
 
-  if (result.error || result.status !== 0) {
-    throw new Error(`token-fusion Python error: ${result.stderr || result.error?.message}`);
-  }
+	if (result.error || result.status !== 0) {
+		throw new Error(`token-fusion Python error: ${result.stderr || result.error?.message}`);
+	}
 
-  try {
-    return JSON.parse(result.stdout.trim());
-  } catch {
-    return new JsCompressor().compress(text, options);
-  }
+	try {
+		return JSON.parse(result.stdout.trim());
+	} catch {
+		return new JsCompressor().compress(text, options);
+	}
 }
 
 function buildPythonScript(text: string, options: CompressionOptions): string {
-  const escaped = JSON.stringify(text);
-  const opts = JSON.stringify({
-    content_type: options.contentType || null,
-    language: options.language || null,
-    role: options.role || null,
-    enable_rewind: options.rewind || false,
-  });
+	const escaped = JSON.stringify(text);
+	const opts = JSON.stringify({
+		content_type: options.contentType || null,
+		language: options.language || null,
+		role: options.role || null,
+		enable_rewind: options.rewind || false,
+	});
 
-  return `
+	return `
 import json, sys
 sys.path.insert(0, '.')
 from token_fusion.pipeline import FusionEngine

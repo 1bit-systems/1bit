@@ -6,6 +6,6 @@
  * all-JS port, see the compression primitives in `compress.ts`.
  */
 
-export type { CompressionResult, CompressionOptions, RewindStore } from "./types.js";
-export { compress, compressMessages, estimateTokens } from "./compress.js";
-export { RewindStore } from "./rewind.js";
+export { compress, compressMessages, estimateTokens } from "./compress";
+export { RewindStore } from "./rewind";
+export type { CompressionOptions, CompressionResult, RewindStore } from "./types";

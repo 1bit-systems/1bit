@@ -31,9 +31,9 @@
     }
   },
   "devDependencies": {
-    "typescript": "^5.5",
-    "vitest": "^2.0",
-    "@types/node": "^20.0"
+    "typescript": "5.9.3",
+    "vitest": "4.1.9",
+    "@types/node": "22.19.19"
   },
   "dependencies": {}
 }
