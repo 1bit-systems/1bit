@@ -31,11 +31,11 @@ describe("config", () => {
 			expect(getOrchestratorDir()).toBe(join("/custom/config", "orchestrator"));
 		});
 
-		it("should default to ~/.1bit/orchestrator", async () => {
+		it("should default to ~/.pi/orchestrator", async () => {
 			delete process.env.PI_ORCHESTRATOR_DIR;
 			delete process.env.PI_CONFIG_DIR;
 			const { getOrchestratorDir } = await import("../src/config.ts");
-			expect(getOrchestratorDir()).toBe(join(homedir(), ".1bit", "orchestrator"));
+			expect(getOrchestratorDir()).toBe(join(homedir(), ".pi", "orchestrator"));
 		});
 	});
 

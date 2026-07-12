@@ -37,7 +37,7 @@ describe("extractFileOpsFromMessage", () => {
 					arguments: { path: "/home/user/file.ts" },
 				},
 			],
-		} as AgentMessage;
+		} as unknown as AgentMessage;
 		const ops = createFileOps();
 		extractFileOpsFromMessage(msg, ops);
 		expect(ops.read.has("/home/user/file.ts")).toBe(true);
@@ -54,7 +54,7 @@ describe("extractFileOpsFromMessage", () => {
 					arguments: { path: "/home/user/output.ts", content: "..." },
 				},
 			],
-		} as AgentMessage;
+		} as unknown as AgentMessage;
 		const ops = createFileOps();
 		extractFileOpsFromMessage(msg, ops);
 		expect(ops.written.has("/home/user/output.ts")).toBe(true);
@@ -71,7 +71,7 @@ describe("extractFileOpsFromMessage", () => {
 					arguments: { path: "/home/user/config.ts", oldText: "a", newText: "b" },
 				},
 			],
-		} as AgentMessage;
+		} as unknown as AgentMessage;
 		const ops = createFileOps();
 		extractFileOpsFromMessage(msg, ops);
 		expect(ops.edited.has("/home/user/config.ts")).toBe(true);
@@ -85,7 +85,7 @@ describe("extractFileOpsFromMessage", () => {
 				{ type: "toolCall", name: "write", id: "tc2", arguments: { path: "/b.txt", content: "x" } },
 				{ type: "toolCall", name: "edit", id: "tc3", arguments: { path: "/c.txt", oldText: "a", newText: "b" } },
 			],
-		} as AgentMessage;
+		} as unknown as AgentMessage;
 		const ops = createFileOps();
 		extractFileOpsFromMessage(msg, ops);
 		expect(ops.read.has("/a.txt")).toBe(true);
@@ -94,7 +94,7 @@ describe("extractFileOpsFromMessage", () => {
 	});
 
 	it("should skip non-assistant messages", () => {
-		const msg = { role: "user", content: "hello" } as AgentMessage;
+		const msg = { role: "user", content: "hello" } as unknown as AgentMessage;
 		const ops = createFileOps();
 		extractFileOpsFromMessage(msg, ops);
 		expect(ops.read.size).toBe(0);
@@ -103,7 +103,7 @@ describe("extractFileOpsFromMessage", () => {
 	});
 
 	it("should skip messages without content array", () => {
-		const msg = { role: "assistant", content: "plain text" } as AgentMessage;
+		const msg = { role: "assistant", content: "plain text" } as unknown as AgentMessage;
 		const ops = createFileOps();
 		extractFileOpsFromMessage(msg, ops);
 		expect(ops.read.size).toBe(0);
@@ -120,7 +120,7 @@ describe("extractFileOpsFromMessage", () => {
 					arguments: { command: "ls" },
 				},
 			],
-		} as AgentMessage;
+		} as unknown as AgentMessage;
 		const ops = createFileOps();
 		extractFileOpsFromMessage(msg, ops);
 		expect(ops.read.size).toBe(0);
@@ -133,7 +133,7 @@ describe("extractFileOpsFromMessage", () => {
 				{ type: "text", text: "I'll read that file" },
 				{ type: "toolCall", name: "read", id: "tc1", arguments: { path: "/test.ts" } },
 			],
-		} as AgentMessage;
+		} as unknown as AgentMessage;
 		const ops = createFileOps();
 		extractFileOpsFromMessage(msg, ops);
 		expect(ops.read.size).toBe(1);
@@ -223,24 +223,24 @@ describe("formatFileOperations", () => {
 
 describe("serializeConversation", () => {
 	it("should serialize user messages", () => {
-		const messages: Message[] = [{ role: "user", content: "Hello world" }];
+		const messages = [{ role: "user", content: "Hello world" }] as unknown as Message[];
 		const result = serializeConversation(messages);
 		expect(result).toBe("[User]: Hello world");
 	});
 
 	it("should serialize assistant text", () => {
-		const messages: Message[] = [
+		const messages = [
 			{
 				role: "assistant",
 				content: [{ type: "text", text: "I can help with that" }],
 			},
-		];
+		] as unknown as Message[];
 		const result = serializeConversation(messages);
 		expect(result).toContain("[Assistant]: I can help with that");
 	});
 
 	it("should serialize thinking blocks", () => {
-		const messages: Message[] = [
+		const messages = [
 			{
 				role: "assistant",
 				content: [
@@ -248,14 +248,14 @@ describe("serializeConversation", () => {
 					{ type: "text", text: "Here is my answer" },
 				],
 			},
-		];
+		] as unknown as Message[];
 		const result = serializeConversation(messages);
 		expect(result).toContain("[Assistant thinking]: Let me think about this...");
 		expect(result).toContain("[Assistant]: Here is my answer");
 	});
 
 	it("should serialize tool calls", () => {
-		const messages: Message[] = [
+		const messages = [
 			{
 				role: "assistant",
 				content: [
@@ -267,7 +267,7 @@ describe("serializeConversation", () => {
 					},
 				],
 			},
-		];
+		] as unknown as Message[];
 		const result = serializeConversation(messages);
 		expect(result).toContain("[Assistant tool calls]");
 		expect(result).toContain("read(");
@@ -275,40 +275,40 @@ describe("serializeConversation", () => {
 	});
 
 	it("should serialize tool results", () => {
-		const messages: Message[] = [
+		const messages = [
 			{
 				role: "toolResult",
 				toolCallId: "tc1",
 				content: [{ type: "text", text: "File contents here" }],
 			},
-		];
+		] as unknown as Message[];
 		const result = serializeConversation(messages);
 		expect(result).toContain("[Tool result]: File contents here");
 	});
 
 	it("should truncate long tool results", () => {
 		const longText = "x".repeat(3000);
-		const messages: Message[] = [
+		const messages = [
 			{
 				role: "toolResult",
 				toolCallId: "tc1",
 				content: [{ type: "text", text: longText }],
 			},
-		];
+		] as unknown as Message[];
 		const result = serializeConversation(messages);
 		expect(result).toContain("truncated");
 		expect(result.length).toBeLessThan(longText.length + 100);
 	});
 
 	it("should join multiple messages", () => {
-		const messages: Message[] = [
+		const messages = [
 			{ role: "user", content: "Question 1" },
 			{
 				role: "assistant",
 				content: [{ type: "text", text: "Answer 1" }],
 			},
 			{ role: "user", content: "Question 2" },
-		];
+		] as unknown as Message[];
 		const result = serializeConversation(messages);
 		expect(result).toContain("[User]: Question 1");
 		expect(result).toContain("[Assistant]: Answer 1");
@@ -321,7 +321,7 @@ describe("serializeConversation", () => {
 	});
 
 	it("should handle user messages with content parts", () => {
-		const messages: Message[] = [
+		const messages = [
 			{
 				role: "user",
 				content: [
@@ -329,13 +329,13 @@ describe("serializeConversation", () => {
 					{ type: "text", text: "Part 2" },
 				],
 			},
-		];
+		] as unknown as Message[];
 		const result = serializeConversation(messages);
 		expect(result).toBe("[User]: Part 1Part 2");
 	});
 
 	it("should handle complex tool call arguments", () => {
-		const messages: Message[] = [
+		const messages = [
 			{
 				role: "assistant",
 				content: [
@@ -351,7 +351,7 @@ describe("serializeConversation", () => {
 					},
 				],
 			},
-		];
+		] as unknown as Message[];
 		const result = serializeConversation(messages);
 		expect(result).toContain("edit(");
 		expect(result).toContain("oldText=");
@@ -361,7 +361,7 @@ describe("serializeConversation", () => {
 	it("should handle unserializable arguments gracefully", () => {
 		const circular: Record<string, unknown> = { path: "/test.ts" };
 		circular.self = circular;
-		const messages: Message[] = [
+		const messages = [
 			{
 				role: "assistant",
 				content: [
@@ -373,19 +373,19 @@ describe("serializeConversation", () => {
 					},
 				],
 			},
-		];
+		] as unknown as Message[];
 		const result = serializeConversation(messages);
 		expect(result).toContain("[unserializable]");
 	});
 
 	it("should skip tool results without text content", () => {
-		const messages: Message[] = [
+		const messages = [
 			{
 				role: "toolResult",
 				toolCallId: "tc1",
 				content: [],
 			},
-		];
+		] as unknown as Message[];
 		const result = serializeConversation(messages);
 		expect(result).toBe("");
 	});
