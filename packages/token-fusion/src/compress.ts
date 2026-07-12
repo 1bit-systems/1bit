@@ -6,9 +6,8 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
-import { JsCompressor } from "./js-compress";
-import type { CompressionOptions, CompressionResult, MessagesCompressionResult, StageStats } from "./types";
+import { JsCompressor } from "./js-compress.ts";
+import type { CompressionOptions, CompressionResult, MessagesCompressionResult } from "./types.ts";
 
 /**
  * Compress a single text block using the 14-stage Fusion Pipeline.
@@ -67,7 +66,7 @@ export function compressMessages(
 /**
  * Estimate token count (heuristic — ~4 chars per token).
  */
-export function estimateTokens(text: string, model?: string): number {
+export function estimateTokens(text: string, _model?: string): number {
 	return Math.max(1, Math.ceil(text.length / 4));
 }
 
@@ -103,19 +102,13 @@ function compressViaPython(text: string, options: CompressionOptions): Compressi
 
 function buildPythonScript(text: string, options: CompressionOptions): string {
 	const escaped = JSON.stringify(text);
-	const opts = JSON.stringify({
-		content_type: options.contentType || null,
-		language: options.language || null,
-		role: options.role || null,
-		enable_rewind: options.rewind || false,
-	});
 
 	return `
 import json, sys
 sys.path.insert(0, '.')
 from token_fusion.pipeline import FusionEngine
 
-engine = FusionEngine(enable_rewind=${opts.rewind === undefined ? "False" : opts.rewind ? "True" : "False"})
+engine = FusionEngine(enable_rewind=${options.rewind === undefined ? "False" : options.rewind ? "True" : "False"})
 result = engine.compress(
     ${escaped},
     content_type=${JSON.stringify(options.contentType)},

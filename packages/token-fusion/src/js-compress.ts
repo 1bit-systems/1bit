@@ -5,7 +5,7 @@
  * Implements: SemanticDedup (SimHash), LogCrunch, Ionizer, TokenOpt, Abbrev, RLE
  */
 
-import type { CompressionMode, CompressionOptions, CompressionResult, StageStats } from "./types";
+import type { CompressionMode, CompressionOptions, CompressionResult, StageStats } from "./types.ts";
 
 // ─── Token estimation ────────────────────────────────────────
 
@@ -73,7 +73,7 @@ interface StageResult {
 
 type StageFn = (text: string, ctype: string, mode: CompressionMode) => StageResult;
 
-function semanticDedup(text: string, ctype: string, mode: CompressionMode): StageResult {
+function semanticDedup(text: string, _ctype: string, mode: CompressionMode): StageResult {
 	const start = performance.now();
 	const lines = text.split("\n");
 	const blockSize = Math.max(1, Math.ceil(lines.length / 30));
@@ -84,7 +84,7 @@ function semanticDedup(text: string, ctype: string, mode: CompressionMode): Stag
 
 	const kept: string[] = [];
 	const fps: number[] = [];
-	let dupes = 0;
+	let _dupes = 0;
 	const threshold = mode === "aggressive" ? 0.7 : 0.85;
 
 	for (const block of blocks) {
@@ -95,7 +95,7 @@ function semanticDedup(text: string, ctype: string, mode: CompressionMode): Stag
 		const fp = simhash(block);
 		const isDup = fps.some((efp) => simhashSimilarity(fp, efp) >= threshold);
 		if (isDup) {
-			dupes++;
+			_dupes++;
 			continue;
 		}
 		kept.push(block);
@@ -137,20 +137,20 @@ function ionizer(text: string, ctype: string, mode: CompressionMode): StageResul
 	}
 }
 
-function logCrunch(text: string, ctype: string, mode: CompressionMode): StageResult {
+function logCrunch(text: string, ctype: string, _mode: CompressionMode): StageResult {
 	if (ctype !== "log") return { content: text, reduction: 0, timeMs: 0 };
 	const start = performance.now();
 	const lines = text.split("\n");
 	const result: string[] = [];
 	let i = 0;
-	let folded = 0;
+	let _folded = 0;
 
 	while (i < lines.length) {
 		let count = 1;
 		while (i + count < lines.length && lines[i + count] === lines[i]) count++;
 		if (count > 2) {
 			result.push(`[x${count}] ${lines[i]}`);
-			folded += count - 1;
+			_folded += count - 1;
 		} else {
 			for (let j = 0; j < count; j++) result.push(lines[i]);
 		}
@@ -187,16 +187,16 @@ const ABBREVIATIONS: Record<string, string> = {
 	version: "v",
 };
 
-function abbrev(text: string, ctype: string, mode: CompressionMode): StageResult {
+function _abbrev(text: string, ctype: string, _mode: CompressionMode): StageResult {
 	if (ctype === "code" || ctype === "json") return { content: text, reduction: 0, timeMs: 0 };
 	const start = performance.now();
 	let result = text;
-	let count = 0;
+	let _count = 0;
 
 	for (const [word, abbr] of Object.entries(ABBREVIATIONS)) {
 		const regex = new RegExp(`\\b${word}\\b`, "gi");
 		result = result.replace(regex, () => {
-			count++;
+			_count++;
 			return abbr;
 		});
 	}
@@ -208,7 +208,7 @@ function abbrev(text: string, ctype: string, mode: CompressionMode): StageResult
 	};
 }
 
-function tokenOpt(text: string, ctype: string, mode: CompressionMode): StageResult {
+function _tokenOpt(text: string, _ctype: string, _mode: CompressionMode): StageResult {
 	const start = performance.now();
 	const result = text
 		.replace(/\*{1,3}([^*]+)\*{1,3}/g, "$1") // Strip bold/italic
@@ -223,7 +223,7 @@ function tokenOpt(text: string, ctype: string, mode: CompressionMode): StageResu
 	};
 }
 
-function rleCompress(text: string, ctype: string, mode: CompressionMode): StageResult {
+function rleCompress(text: string, _ctype: string, _mode: CompressionMode): StageResult {
 	const start = performance.now();
 	const pathPrefixes: [RegExp, string][] = [
 		[/\/home\//g, "$HOME/"],

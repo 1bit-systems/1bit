@@ -11,9 +11,9 @@
  * ```
  */
 
-import type { Extension, SessionBeforeCompactEvent } from "@earendil-works/pi-coding-agent";
-import { compress } from "./compress";
-import { RewindStore } from "./rewind";
+import type { SessionBeforeCompactEvent } from "@earendil-works/pi-coding-agent";
+import { compress } from "./compress.ts";
+import { RewindStore } from "./rewind.ts";
 
 export interface TokenFusionExtensionOptions {
 	/** Enable RewindStore for reversible compression. Default: true. */
@@ -28,10 +28,10 @@ export interface TokenFusionExtensionOptions {
  * Creates a pi extension that hooks into `session_before_compact`
  * to provide algorithmic compression instead of LLM summarization.
  */
-export function createTokenFusionExtension(options: TokenFusionExtensionOptions = {}): Extension {
+export function createTokenFusionExtension(options: TokenFusionExtensionOptions = {}) {
 	const rewind = options.rewind ?? true;
 	const mode = options.mode ?? "balanced";
-	const threshold = options.threshold ?? 0.7;
+	const _threshold = options.threshold ?? 0.7;
 	const rewindStore = new RewindStore();
 
 	return {

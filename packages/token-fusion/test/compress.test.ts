@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { compress, compressMessages } from "../src/compress";
-import { JsCompressor } from "../src/js-compress";
-import { RewindStore } from "../src/rewind";
+import { compressMessages } from "../src/compress.ts";
+import { JsCompressor } from "../src/js-compress.ts";
+import { RewindStore } from "../src/rewind.ts";
 
 describe("JsCompressor", () => {
 	const c = new JsCompressor();
