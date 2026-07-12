@@ -1,0 +1,39 @@
+{
+  "name": "@1bit-systems/token-fusion",
+  "version": "0.1.0",
+  "description": "LLM context compression via the 14-stage Fusion Pipeline — algorithmic token compression with zero LLM overhead",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./pi": {
+      "types": "./dist/pi.d.ts",
+      "import": "./dist/pi.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": ">=0.80.0"
+  },
+  "peerDependenciesMeta": {
+    "@earendil-works/pi-coding-agent": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "typescript": "^5.5",
+    "vitest": "^2.0",
+    "@types/node": "^20.0"
+  },
+  "dependencies": {}
+}
