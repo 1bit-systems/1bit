@@ -20,7 +20,7 @@ describe("JsCompressor", () => {
     expect(r.stats.reductionPct).toBeGreaterThan(70);
   });
 
-  it("skips abbrev on code", () => {
+  it("preserves identifiers in code", () => {
     const code = 'def calculate_configuration():\n    return "config"';
     const r = c.compress(code, { contentType: "code" });
     expect(r.compressed).toContain("calculate_configuration");
@@ -35,7 +35,7 @@ describe("JsCompressor", () => {
     expect(r.stats.stages).toBeDefined();
   });
 
-  it("applies abbrev on text", () => {
+  it("compresses text content", () => {
     const r = c.compress("The configuration file with the application", { contentType: "text" });
     expect(r.stats.reductionPct).toBeGreaterThanOrEqual(0);
   });

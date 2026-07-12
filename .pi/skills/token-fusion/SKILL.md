@@ -68,11 +68,19 @@ estimate_tokens(text="...", model="gpt-4")
 | Content | Best stage | Expected reduction |
 |---------|-----------|:------------------:|
 | JSON tool results (50+ items) | Ionizer | 80-97% |
-| Repeated log lines | LogCrunch + SemanticDedup | 70-96% |
-| Python code with comments | Neurosyntax + StructuralCollapse | 15-25% |
-| Git diffs | DiffCrunch | 15-40% |
-| Long text conversations | Nexus + Abbrev | 10-30% |
+| Repeated log lines (identical) | LogCrunch + SemanticDedup | 70-96% |
 | Search/grep results | SearchCrunch | 40-80% |
+| Git diffs | DiffCrunch | 15-40% |
+| Long agent conversations | Cross-message SemanticDedup | 10-30% |
+| Python code with comments | Neurosyntax (NEVER strips docs) | 0-5% |
+
+### What does NOT work well
+| Scenario | Why |
+|----------|-----|
+| Short single-turn prompts | Saving 5 tokens on 100-token prompt = noise |
+| Normal code without repetition | Comments carry intent; Neurosyntax never strips them |
+| Unique text (no repetition) | No duplicate content to deduplicate |
+| General text compression | Pipeline is algorithmic; no semantic understanding
 
 ## Rewind Protocol
 

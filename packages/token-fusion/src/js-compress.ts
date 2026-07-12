@@ -231,13 +231,13 @@ function rleCompress(text: string, ctype: string, mode: CompressionMode): StageR
 
 // ─── Stage pipeline order ────────────────────────────────────
 
+// Default stages: only those that provide meaningful token reduction.
+// Abbrev and TokenOpt excluded — they save <5 tokens on typical content.
 const STAGES: Array<{ name: string; order: number; fn: StageFn }> = [
   { name: "RLE", order: 10, fn: rleCompress },
   { name: "SemanticDedup", order: 12, fn: semanticDedup },
   { name: "Ionizer", order: 15, fn: ionizer },
   { name: "LogCrunch", order: 16, fn: logCrunch },
-  { name: "TokenOpt", order: 40, fn: tokenOpt },
-  { name: "Abbrev", order: 45, fn: abbrev },
 ].sort((a, b) => a.order - b.order);
 
 // ─── Public API ──────────────────────────────────────────────
